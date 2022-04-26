@@ -15,14 +15,12 @@ class Draw_info:
     RED = 255, 0, 0
     GREY = 128, 128, 128
     BACKGROUND_COLOR = BG_COLOR
-
     GRADIENTS = []
-
     FONT = pygame.font.SysFont('comicsans', 20)
     LARGE_FONT = pygame.font.SysFont('comicsans', 40)
-
     SIDE_PAD = 100
     TOP_PAD = 150
+
 
     def __init__(self, width, height, lst, n):
         self.width = width
@@ -33,26 +31,25 @@ class Draw_info:
         self.window = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Sorting Visualizer")
         self.set_list(lst)
-        self.build_color_gradient(n)
+        self.build_color_gradient()
     
+
     def set_list(self, lst):
         self.lst = lst
         self.min_value = min(lst)
         self.max_value = max(lst)
-
         self.bar_width = round((self.width - self.SIDE_PAD) / len(lst))
         self.bar_height = math.floor((self.height - self.TOP_PAD) / (self.max_value - self.min_value))
         self.start_x = self.SIDE_PAD // 2
 
-    def build_color_gradient(self, n):
+    def build_color_gradient(self):
         # returns list of tuples representing n shades (r,g,b) from darkest to lightest
         gradients = []
         lightest = 220
         darkest = 20
         color_range = lightest - darkest
-        for i in range(n + 1):
-            rgb_val = darkest + ( color_range / n) * i + 1
-            # gradients.append((rgb_val // 2, rgb_val + (rgb_val // 8), rgb_val - (rgb_val // 4)))
+        for i in range(self.n + 1):
+            rgb_val = darkest + ( color_range / self.n) * i
             gradients.append((rgb_val, rgb_val, rgb_val))
         self.GRADIENTS = gradients
 
@@ -62,7 +59,6 @@ def build_list(n, min_val, max_val):
         val = random.randint(min_val, max_val)
         lst.append(val)
     return lst
-
 
 
 def draw(draw_info, n):
@@ -89,22 +85,11 @@ def draw_list(draw_info, n, color_positions={}, clear_bg=False):
         y = draw_info.height - (val - draw_info.min_value) * draw_info.bar_height
 
         proportion = int((val / draw_info.max_value) * draw_info.n)
-        #color = draw_info.GRADIENTS[i % 3]
-        # color = draw_info.GRADIENTS[int((val / max_in_list) * (n-1))]
         scale = (draw_info.max_value // draw_info.n)
-        # color = draw_info.GRADIENTS[(val // scale)]
-        # color = draw_info.GRADIENTS[val // scale]
         color = draw_info.GRADIENTS[proportion]
-        print(draw_info.n)
-
-        #color = gradient_list[(round(proportion) - 1)]
-        print(color)
-
-        #print(gradient_list)
 
         if i in color_positions:
             color = color_positions[i]
-
         
         pygame.draw.rect(draw_info.window, color, (x, y, draw_info.bar_width, draw_info.height))
 
@@ -157,7 +142,6 @@ def main():
                 sorting = False
         else:
             draw(draw_info, n)
-        # print(build_color_gradient(n))
         pygame.display.update()
         for event in pygame.event.get(): 
         # Returns a list of all the events that have occured since the last loop
