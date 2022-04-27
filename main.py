@@ -1,5 +1,6 @@
 import pygame
 import random 
+from time import sleep
 
 pygame.init()
 
@@ -67,13 +68,15 @@ def draw(draw_info, algo_name):
     controls = draw_info.FONT.render("R: Reset     SPACE: Start Sort", 1, draw_info.BLACK)
     draw_info.window.blit(controls, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - controls.get_width() / 2, 45))
 
-    sorting_str = ["I - Insertion Sort", "B - Bubble Sort", "Q - Quick Sort"]
+    sorting_str = ["I - Insertion Sort", "B - Bubble Sort", "Q - Quick Sort", "M - Merge Sort"]
     sorting = draw_info.FONT.render(sorting_str[0], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 30))
     sorting = draw_info.FONT.render(sorting_str[1], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 55))
     sorting = draw_info.FONT.render(sorting_str[2], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 80))
+    sorting = draw_info.FONT.render(sorting_str[3], 1, draw_info.BLACK)
+    draw_info.window.blit(sorting, (30, 105))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -138,16 +141,50 @@ def partition(array, low, high, draw_info):
       draw_list(draw_info, {i: draw_info.SWAP1, j: draw_info.SWAP2}, True)
   (array[i + 1], array[high]) = (array[high], array[i + 1])
   return i + 1
- 
 def quick_sort(array, low, high, draw_info):
   if low < high:
     pi = partition(array, low, high, draw_info)
+    sleep(.1)
     quick_sort(array, low, pi - 1, draw_info)
     quick_sort(array, pi + 1, high, draw_info)
-
 def quick_sort_wrapper(draw_info):
     quick_sort(draw_info.lst, 0, draw_info.n - 1, draw_info)
     yield True
+
+def merge_sort_wrapper(draw_info):
+    merge_sort(draw_info.lst, draw_info)
+    yield True
+def merge_sort(arr, draw_info):
+    if len(arr) > 1:
+  
+        mid = len(arr)//2
+        L = arr[:mid]
+        R = arr[mid:]
+        sleep(.1)
+        merge_sort(L, draw_info)
+        merge_sort(R, draw_info)
+        i = j = k = 0
+        while i < len(L) and j < len(R):
+            if L[i] < R[j]:
+                arr[k] = L[i]
+                draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
+                i += 1
+            else:
+                arr[k] = R[j]
+                draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
+                j += 1
+            k += 1
+        while i < len(L):
+            arr[k] = L[i]
+            draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
+            i += 1
+            k += 1
+        while j < len(R):
+            arr[k] = R[j]
+            draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
+            j += 1
+            k += 1
+    
 
 # render the screen
 # define the main event loop
@@ -200,6 +237,11 @@ def main():
             elif event.key == pygame.K_q and not sorting:
                 sorting_algorithm  = quick_sort_wrapper
                 sorting_algo_name  = "Quick sort"
+            elif event.key == pygame.K_m and not sorting:
+                sorting_algorithm  = merge_sort_wrapper
+                sorting_algo_name  = "Merge sort"
+  
+  
             
     pygame.quit()
 
