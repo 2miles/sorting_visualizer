@@ -138,60 +138,49 @@ def insertion_sort(draw_info):
             yield True
 
 
-# Function to find the partition position
-def partition(array, low, high, draw_info):
-  pivot = array[high]
-  i = low - 1
-  for j in range(low, high):
-    if array[j] <= pivot:
-      i = i + 1
-      (array[i], array[j]) = (array[j], array[i])
-      draw_list(draw_info, {i: draw_info.SWAP1, j: draw_info.SWAP2}, True)
-  (array[i + 1], array[high]) = (array[high], array[i + 1])
-  return i + 1
-def quick_sort(array, low, high, draw_info):
-  if low < high:
-    pi = partition(array, low, high, draw_info)
-    sleep(.1)
-    quick_sort(array, low, pi - 1, draw_info)
-    quick_sort(array, pi + 1, high, draw_info)
+
 def quick_sort_wrapper(draw_info):
-    quick_sort(draw_info.lst, 0, draw_info.n - 1, draw_info)
+    quickSort(draw_info.lst, 0, draw_info.n - 1, draw_info)
     yield True
 
-def merge_sort_wrapper(draw_info):
-    merge_sort(draw_info.lst, draw_info)
-    yield True
-def merge_sort(arr, draw_info):
-    if len(arr) > 1:
-  
-        mid = len(arr)//2
-        L = arr[:mid]
-        R = arr[mid:]
-        merge_sort(L, draw_info)
-        merge_sort(R, draw_info)
-        sleep(.1)
-        i = j = k = 0
-        while i < len(L) and j < len(R):
-            if L[i] < R[j]:
-                arr[k] = L[i]
-                draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
-                i += 1
-            else:
-                arr[k] = R[j]
-                draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
-                j += 1
-            k += 1
-        while i < len(L):
-            arr[k] = L[i]
-            draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
+def partition(arr, low, high, draw_info):
+    i = (low - 1)         # index of smaller element
+    pivot = arr[high]     # pivot
+ 
+    for j in range(low, high):
+ 
+        # If current element is smaller
+        # than or equal to pivot
+        if arr[j] <= pivot:
+         
+            # increment index of
+            # smaller element
             i += 1
-            k += 1
-        while j < len(R):
-            arr[k] = R[j]
-            draw_list(draw_info, {i: draw_info.SWAP1, k: draw_info.SWAP2}, True)
-            j += 1
-            k += 1
+            arr[i], arr[j] = arr[j], arr[i]
+            draw_list(draw_info, {i: draw_info.SWAP1, j: draw_info.SWAP2}, True)
+ 
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    draw_list(draw_info, {i + 1: draw_info.SWAP1, high: draw_info.SWAP2}, True)
+    return (i + 1)
+ 
+# The main function that implements QuickSort
+# arr[] --> Array to be sorted,
+# low --> Starting index,
+# high --> Ending index
+ 
+# Function to do Quick sort
+def quickSort(arr, low, high, draw_info):
+    if low < high:
+ 
+        # pi is partitioning index, arr[p] is now
+        # at right place
+        pi = partition(arr, low, high, draw_info)
+ 
+        # Separately sort elements before
+        # partition and after partition
+        quickSort(arr, low, pi-1, draw_info)
+        quickSort(arr, pi + 1, high, draw_info)
+
     
 def selection_sort(draw_info):
     lst = draw_info.lst
@@ -209,6 +198,68 @@ def selection_sort(draw_info):
         lst[i], lst[min_idx] = lst[min_idx], lst[i]
         draw_list(draw_info, {i: draw_info.SWAP1, min_idx: draw_info.SWAP2}, True)
     yield True
+
+
+def merge_sort_wrapper(draw_info):
+    mergeSort(draw_info.lst, draw_info)
+    yield True
+def mergeSort(a, draw_info):
+    # start with least partition size of 2^0 = 1
+    width = 1   
+    n = len(a)                                         
+    # subarray size grows by powers of 2
+    # since growth of loop condition is exponential,
+    # time consumed is logarithmic (log2n)
+    while (width < n):
+        # always start from leftmost
+        l=0;
+        while (l < n):
+            r = min(l+(width*2-1), n-1)        
+            m = min(l+width-1,n-1)
+            # final merge should consider
+            # unmerged sublist if input arr
+            # size is not power of 2             
+            merge(a, l, m, r, draw_info)
+            l += width*2
+        # Increasing sub array size by powers of 2
+        width *= 2
+    return a
+# Merge Function
+def merge(a, l, m, r, draw_info):
+    n1 = m - l + 1
+    n2 = r - m
+    L = [0] * n1
+    R = [0] * n2
+    for i in range(0, n1):
+        L[i] = a[l + i]
+        draw_list(draw_info, {n1 * i: draw_info.SWAP1, l + i: draw_info.SWAP2}, True)
+    for i in range(0, n2):
+        draw_list(draw_info, {n2 * i: draw_info.SWAP1, l + i: draw_info.SWAP2}, True)
+        R[i] = a[m + i + 1]
+
+    i, j, k = 0, 0, l
+    while i < n1 and j < n2:
+        if L[i] <= R[j]:
+            a[k] = L[i]
+            draw_list(draw_info, {k: draw_info.SWAP1, n1 * i: draw_info.SWAP2}, True)
+            i += 1
+        else:
+            a[k] = R[j]
+            draw_list(draw_info, {k: draw_info.SWAP1, n2 * j: draw_info.SWAP2}, True)
+            j += 1
+        k += 1
+
+    while i < n1:
+        a[k] = L[i]
+        draw_list(draw_info, {k: draw_info.SWAP1, n1 * i: draw_info.SWAP2}, True)
+        i += 1
+        k += 1
+
+    while j < n2:
+        a[k] = R[j]
+        draw_list(draw_info, {k: draw_info.SWAP1, n2 * j: draw_info.SWAP2}, True)
+        j += 1
+        k += 1
 
 # render the screen
 # define the main event loop
