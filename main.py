@@ -3,8 +3,6 @@ import random
 
 pygame.init()
 
-
-
 class Draw_info:
     #class attributes
     BLACK = 0, 0, 0
@@ -69,11 +67,13 @@ def draw(draw_info, algo_name):
     controls = draw_info.FONT.render("R: Reset     SPACE: Start Sort", 1, draw_info.BLACK)
     draw_info.window.blit(controls, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - controls.get_width() / 2, 45))
 
-    sorting_str = ["I - Insertion Sort", "B - Bubble Sort"]
+    sorting_str = ["I - Insertion Sort", "B - Bubble Sort", "Q - Quick Sort"]
     sorting = draw_info.FONT.render(sorting_str[0], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 30))
     sorting = draw_info.FONT.render(sorting_str[1], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 55))
+    sorting = draw_info.FONT.render(sorting_str[2], 1, draw_info.BLACK)
+    draw_info.window.blit(sorting, (30, 80))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -127,6 +127,28 @@ def insertion_sort(draw_info):
             yield True
 
 
+# Function to find the partition position
+def partition(array, low, high, draw_info):
+  pivot = array[high]
+  i = low - 1
+  for j in range(low, high):
+    if array[j] <= pivot:
+      i = i + 1
+      (array[i], array[j]) = (array[j], array[i])
+      draw_list(draw_info, {i: draw_info.SWAP1, j: draw_info.SWAP2}, True)
+  (array[i + 1], array[high]) = (array[high], array[i + 1])
+  return i + 1
+ 
+def quick_sort(array, low, high, draw_info):
+  if low < high:
+    pi = partition(array, low, high, draw_info)
+    quick_sort(array, low, pi - 1, draw_info)
+    quick_sort(array, pi + 1, high, draw_info)
+
+def quick_sort_wrapper(draw_info):
+    quick_sort(draw_info.lst, 0, draw_info.n - 1, draw_info)
+    yield True
+
 # render the screen
 # define the main event loop
 def main():
@@ -175,6 +197,9 @@ def main():
             elif event.key == pygame.K_b and not sorting:
                 sorting_algorithm  = bubble_sort
                 sorting_algo_name  = "Bubble Sort"
+            elif event.key == pygame.K_q and not sorting:
+                sorting_algorithm  = quick_sort_wrapper
+                sorting_algo_name  = "Quick sort"
             
     pygame.quit()
 
