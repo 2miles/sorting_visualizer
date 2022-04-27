@@ -10,8 +10,8 @@ class Draw_info:
     #class attributes
     BLACK = 0, 0, 0
     BACKGROUND_COLOR = 100, 140, 150
-    GREEN = 0, 255, 0
-    RED = 255, 0, 0
+    GREEN = 200, 200, 0
+    RED = 150, 70, 0
     GRADIENTS = []
     FONT = pygame.font.SysFont('comicsans', 20)
     LARGE_FONT = pygame.font.SysFont('comicsans', 40)
@@ -19,27 +19,22 @@ class Draw_info:
     TOP_PAD = 150
 
 
-    def __init__(self, width, height, lst, n, max_posib):
+    def __init__(self, width, height, n, max_posib):
         self.width = width
         self.height = height
         self.n = n
         self.max_posib = max_posib
+        self.lst = self.build_list()
+        self.bar_width = round((self.width - self.SIDE_PAD) / len(self.lst))
+        self.graph_height = self.height - self.TOP_PAD
+        self.scale = self.graph_height / self.max_posib
+        self.start_x = self.SIDE_PAD // 2
 
         # create the pygame window
         self.window = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Sorting Visualizer")
-        self.set_list(lst)
         self.build_color_gradient()
-    
 
-    def set_list(self, lst):
-        self.lst = lst
-        self.min_value = min(lst)
-        self.max_value = max(lst)
-        self.bar_width = round((self.width - self.SIDE_PAD) / len(lst))
-        self.graph_height = self.height - self.TOP_PAD
-        self.scale = self.graph_height / self.max_posib
-        self.start_x = self.SIDE_PAD // 2
 
     def build_color_gradient(self):
         # returns list of tuples representing n shades (r,g,b) from darkest to lightest
@@ -52,12 +47,12 @@ class Draw_info:
             gradients.append((rgb_val, rgb_val, rgb_val))
         self.GRADIENTS = gradients
 
-def build_list(n, max_val):
-    lst = []
-    for _ in range(n):
-        val = random.randint(0, max_val)
-        lst.append(val)
-    return lst
+    def build_list(self):
+        lst = []
+        for _ in range(self.n):
+            val = random.randint(0, self.max_posib)
+            lst.append(val)
+        return lst
 
 
 def draw(draw_info, n):
@@ -83,7 +78,7 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
         y = draw_info.TOP_PAD + (draw_info.graph_height - (draw_info.scale * val))
 
 
-        proportion = int((val / draw_info.max_value) * draw_info.n)
+        proportion = int((val / draw_info.max_posib) * draw_info.n)
         color = draw_info.GRADIENTS[proportion]
 
         if i in color_positions:
@@ -97,12 +92,10 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
 
 def bubble_sort(draw_info):
     lst = draw_info.lst
-
     for i in range(len(lst) - 1):
         for j in range(len(lst) - 1 - i):
             num1 = lst[j]
             num2 = lst[j + 1]
-
             if (num1 > num2):
                 lst[j], lst[j + 1] = lst[j + 1], lst[j]
                 draw_list(draw_info, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
@@ -125,8 +118,8 @@ def main():
     n = 100
     max_val = 100
 
-    lst = build_list(n, max_val)
-    draw_info = Draw_info(1000, 600, lst, n, max_val)
+
+    draw_info = Draw_info(1000, 600, n, max_val)
 
     while run:
         #sleep(.1)
@@ -148,8 +141,7 @@ def main():
             if event.type != pygame.KEYDOWN:
                 continue
             if event.key == pygame.K_r:
-                lst = build_list(n, max_val)
-                draw_info.set_list(lst)
+                draw_info.lst = draw_info.build_list()
                 sorting = False
             elif event.key == pygame.K_SPACE and not sorting:
                 sorting = True
