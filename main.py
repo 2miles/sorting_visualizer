@@ -74,6 +74,7 @@ def draw(draw_info, algo_name):
         "Q - Quick Sort", 
         "M - Merge Sort",
         "S - Selection Sort",
+        "H - Heap Sort",
         ]
     sorting = draw_info.FONT.render(sorting_str[0], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 30))
@@ -85,6 +86,8 @@ def draw(draw_info, algo_name):
     draw_info.window.blit(sorting, (30, 105))
     sorting = draw_info.FONT.render(sorting_str[4], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 130))
+    sorting = draw_info.FONT.render(sorting_str[5], 1, draw_info.BLACK)
+    draw_info.window.blit(sorting, (30, 155))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -261,6 +264,34 @@ def merge(a, l, m, r, draw_info):
         j += 1
         k += 1
 
+def heap_sort_wrapper(draw_info):
+    lst = draw_info.lst
+    heapify(lst, len(lst), 0, draw_info)
+    heapSort(draw_info.lst, draw_info)
+    yield True
+
+def heapify(arr, n, i, draw_info):
+    largest = i  # Initialize largest as root
+    l = 2 * i + 1     # left = 2*i + 1
+    r = 2 * i + 2     # right = 2*i + 2
+    if l < n and arr[largest] < arr[l]:
+        largest = l
+    if r < n and arr[largest] < arr[r]:
+        largest = r
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]  # swap
+        draw_list(draw_info, {i: draw_info.SWAP1, largest: draw_info.SWAP2}, True)
+        heapify(arr, n, largest, draw_info)
+ 
+def heapSort(arr, draw_info):
+    n = len(arr)
+    for i in range(n//2 - 1, -1, -1):
+        heapify(arr, n, i, draw_info)
+    for i in range(n-1, 0, -1):
+        arr[i], arr[0] = arr[0], arr[i]  # swap
+        draw_list(draw_info, {i: draw_info.SWAP1, 0: draw_info.SWAP2}, True)
+        heapify(arr, i, 0, draw_info)
+
 # render the screen
 # define the main event loop
 def main():
@@ -318,6 +349,9 @@ def main():
             elif event.key == pygame.K_s and not sorting:
                 sorting_algorithm  = selection_sort
                 sorting_algo_name  = "Selection sort"
+            elif event.key == pygame.K_h and not sorting:
+                sorting_algorithm  = heap_sort_wrapper
+                sorting_algo_name  = "Heap sort"
   
   
             
