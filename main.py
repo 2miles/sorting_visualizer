@@ -1,4 +1,3 @@
-import math
 import pygame
 import random 
 from time import sleep
@@ -10,12 +9,9 @@ pygame.init()
 class Draw_info:
     #class attributes
     BLACK = 0, 0, 0
-    WHITE = 255, 255, 255
-    BG_COLOR = 100, 140, 150
+    BACKGROUND_COLOR = 100, 140, 150
     GREEN = 0, 255, 0
     RED = 255, 0, 0
-    GREY = 128, 128, 128
-    BACKGROUND_COLOR = BG_COLOR
     GRADIENTS = []
     FONT = pygame.font.SysFont('comicsans', 20)
     LARGE_FONT = pygame.font.SysFont('comicsans', 40)
@@ -43,8 +39,6 @@ class Draw_info:
         self.bar_width = round((self.width - self.SIDE_PAD) / len(lst))
         self.graph_height = self.height - self.TOP_PAD
         self.scale = self.graph_height / self.max_posib
-
-        self.bar_height = math.floor((self.graph_height) / (self.max_value - self.min_value))
         self.start_x = self.SIDE_PAD // 2
 
     def build_color_gradient(self):
@@ -75,10 +69,10 @@ def draw(draw_info, n):
     sorting = draw_info.FONT.render("I - Insertion Sort     B - Bubble Sort", 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (draw_info.width / 2 - sorting.get_width() / 2, 35))
 
-    draw_list(draw_info, n)
+    draw_list(draw_info)
     pygame.display.update()
 
-def draw_list(draw_info, n, color_positions={}, clear_bg=False):
+def draw_list(draw_info, color_positions={}, clear_bg=False):
     lst = draw_info.lst
     if clear_bg:
         clear_rect = (draw_info.SIDE_PAD // 2, draw_info.TOP_PAD, 
@@ -86,7 +80,6 @@ def draw_list(draw_info, n, color_positions={}, clear_bg=False):
         pygame.draw.rect(draw_info.window, draw_info.BACKGROUND_COLOR, clear_rect)
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.bar_width
-        #y = draw_info.height - (val - draw_info.min_value) * draw_info.bar_height
         y = draw_info.TOP_PAD + (draw_info.graph_height - (draw_info.scale * val))
 
 
@@ -102,7 +95,7 @@ def draw_list(draw_info, n, color_positions={}, clear_bg=False):
         pygame.display.update()
 
 
-def bubble_sort(draw_info, n):
+def bubble_sort(draw_info):
     lst = draw_info.lst
 
     for i in range(len(lst) - 1):
@@ -112,7 +105,7 @@ def bubble_sort(draw_info, n):
 
             if (num1 > num2):
                 lst[j], lst[j + 1] = lst[j + 1], lst[j]
-                draw_list(draw_info, n, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
+                draw_list(draw_info, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
                 yield True
     return lst
 
@@ -122,7 +115,6 @@ def main():
 
     run = True
     sorting = False
-
 
     sorting_algorithm = bubble_sort
     sorting_algo_name = "Bubble Sort"
@@ -161,7 +153,7 @@ def main():
                 sorting = False
             elif event.key == pygame.K_SPACE and not sorting:
                 sorting = True
-                sorting_algorithm_generator = sorting_algorithm(draw_info, n)
+                sorting_algorithm_generator = sorting_algorithm(draw_info)
     pygame.quit()
 
 if __name__ == "__main__":
