@@ -9,14 +9,19 @@ class Draw_info:
     #class attributes
     BLACK = 0, 0, 0
     BACKGROUND_COLOR = 100, 140, 150
+    MENU_BG_COLOR = 80, 120, 120
     SWAP1 = 180, 250, 0
     SWAP2 = 250, 80, 0
     TITLE =100, 0, 100
     GREYS = []
-    FONT = pygame.font.SysFont('comicsans', 20)
-    LARGE_FONT = pygame.font.SysFont('comicsans', 35)
+
+    FONT = pygame.font.SysFont('calibri', 20)
+    LARGE_FONT = pygame.font.SysFont('cansolas', 50)
+
     SIDE_PAD = 100
+    LEFT_MENU = 200
     TOP_PAD = 150
+    BOTTOM_PAD = 50
 
     def __init__(self, width, height, n, lst_max):
         self.width = width
@@ -24,10 +29,10 @@ class Draw_info:
         self.n = n
         self. lst_max= lst_max
         self.lst = self.build_list()
-        self.bar_width = round((self.width - self.SIDE_PAD) / self.n)
+        self.bar_width = round((self.width - self.SIDE_PAD - self.LEFT_MENU) / self.n)
         self.graph_height = self.height - self.TOP_PAD
         self.scale = self.graph_height / self.lst_max
-        self.start_x = self.SIDE_PAD // 2
+        self.start_x = self.SIDE_PAD // 2 + self.LEFT_MENU
 
         # create the pygame window
         self.window = pygame.display.set_mode((width, height))
@@ -55,15 +60,20 @@ class Draw_info:
 
 def draw(draw_info, algo_name):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
+    menu_rect = (0,0,draw_info.LEFT_MENU, draw_info.height)
+    pygame.draw.rect(draw_info.window, draw_info.MENU_BG_COLOR, menu_rect)
 
     title = draw_info.LARGE_FONT.render(f"{algo_name}", 1, draw_info.TITLE)
-    draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
+    draw_info.window.blit(title, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - title.get_width() / 2, 10))
 
     controls = draw_info.FONT.render("R: Reset     SPACE: Start Sort", 1, draw_info.BLACK)
-    draw_info.window.blit(controls, (draw_info.width / 2 - controls.get_width() / 2, 45))
+    draw_info.window.blit(controls, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - controls.get_width() / 2, 45))
 
-    sorting = draw_info.FONT.render("I - Insertion Sort     B - Bubble Sort", 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (draw_info.width / 2 - sorting.get_width() / 2, 65))
+    sorting_str = ["I - Insertion Sort", "B - Bubble Sort"]
+    sorting = draw_info.FONT.render(sorting_str[0], 1, draw_info.BLACK)
+    draw_info.window.blit(sorting, (30, 30))
+    sorting = draw_info.FONT.render(sorting_str[1], 1, draw_info.BLACK)
+    draw_info.window.blit(sorting, (30, 55))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -71,7 +81,7 @@ def draw(draw_info, algo_name):
 def draw_list(draw_info, color_positions={}, clear_bg=False):
     lst = draw_info.lst
     if clear_bg:
-        clear_rect = (draw_info.SIDE_PAD // 2, draw_info.TOP_PAD, 
+        clear_rect = (draw_info.SIDE_PAD // 2 + draw_info.LEFT_MENU, draw_info.TOP_PAD, 
                         draw_info.width - draw_info.SIDE_PAD, draw_info.height - draw_info.TOP_PAD)
         pygame.draw.rect(draw_info.window, draw_info.BACKGROUND_COLOR, clear_rect)
     for i, val in enumerate(lst):
@@ -89,6 +99,7 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
 
     if clear_bg:
         pygame.display.update()
+
 
 
 def bubble_sort(draw_info):
@@ -115,11 +126,6 @@ def insertion_sort(draw_info):
             draw_list(draw_info, {i - 1: draw_info.SWAP1, i: draw_info.SWAP2}, True)
             yield True
 
-             
-
-
-
-
 
 # render the screen
 # define the main event loop
@@ -134,10 +140,10 @@ def main():
 
     clock = pygame.time.Clock()
 
-    n = 150
+    n = 100
     lst_max = 100
 
-    draw_info = Draw_info(1000, 600, n, lst_max)
+    draw_info = Draw_info(1000, 500, n, lst_max)
 
     while run:
         clock.tick(60) #tps
