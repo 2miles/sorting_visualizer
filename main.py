@@ -1,6 +1,5 @@
 import pygame
 import random 
-from time import sleep
 
 pygame.init()
 
@@ -10,59 +9,61 @@ class Draw_info:
     #class attributes
     BLACK = 0, 0, 0
     BACKGROUND_COLOR = 100, 140, 150
-    GREEN = 200, 200, 0
-    RED = 150, 70, 0
-    GRADIENTS = []
+    SWAP1 = 180, 250, 0
+    SWAP2 = 250, 80, 0
+    TITLE =100, 0, 100
+    GREYS = []
     FONT = pygame.font.SysFont('comicsans', 20)
-    LARGE_FONT = pygame.font.SysFont('comicsans', 40)
+    LARGE_FONT = pygame.font.SysFont('comicsans', 35)
     SIDE_PAD = 100
     TOP_PAD = 150
 
-
-    def __init__(self, width, height, n, max_posib):
+    def __init__(self, width, height, n, lst_max):
         self.width = width
         self.height = height
         self.n = n
-        self.max_posib = max_posib
+        self. lst_max= lst_max
         self.lst = self.build_list()
-        self.bar_width = round((self.width - self.SIDE_PAD) / len(self.lst))
+        self.bar_width = round((self.width - self.SIDE_PAD) / self.n)
         self.graph_height = self.height - self.TOP_PAD
-        self.scale = self.graph_height / self.max_posib
+        self.scale = self.graph_height / self.lst_max
         self.start_x = self.SIDE_PAD // 2
 
         # create the pygame window
         self.window = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Sorting Visualizer")
-        self.build_color_gradient()
+        self.build_greys()
 
-
-    def build_color_gradient(self):
+    def build_greys(self):
         # returns list of tuples representing n shades (r,g,b) from darkest to lightest
-        gradients = []
-        lightest = 220
-        darkest = 20
+        greys = []
+        lightest = 250
+        darkest = 10
         color_range = lightest - darkest
         for i in range(self.n + 1):
             rgb_val = darkest + ( color_range / self.n) * i
-            gradients.append((rgb_val, rgb_val, rgb_val))
-        self.GRADIENTS = gradients
+            greys.append((rgb_val, rgb_val, rgb_val))
+        self.GREYS = greys
 
     def build_list(self):
         lst = []
         for _ in range(self.n):
-            val = random.randint(0, self.max_posib)
+            val = random.randint(0, self. lst_max)
             lst.append(val)
         return lst
 
 
-def draw(draw_info, n):
+def draw(draw_info, algo_name):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
 
+    title = draw_info.LARGE_FONT.render(f"{algo_name}", 1, draw_info.TITLE)
+    draw_info.window.blit(title, (draw_info.width / 2 - title.get_width() / 2, 5))
+
     controls = draw_info.FONT.render("R: Reset     SPACE: Start Sort", 1, draw_info.BLACK)
-    draw_info.window.blit(controls, (draw_info.width / 2 - controls.get_width() / 2, 5))
+    draw_info.window.blit(controls, (draw_info.width / 2 - controls.get_width() / 2, 45))
 
     sorting = draw_info.FONT.render("I - Insertion Sort     B - Bubble Sort", 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (draw_info.width / 2 - sorting.get_width() / 2, 35))
+    draw_info.window.blit(sorting, (draw_info.width / 2 - sorting.get_width() / 2, 65))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -78,8 +79,8 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
         y = draw_info.TOP_PAD + (draw_info.graph_height - (draw_info.scale * val))
 
 
-        proportion = int((val / draw_info.max_posib) * draw_info.n)
-        color = draw_info.GRADIENTS[proportion]
+        proportion = int((val / draw_info.lst_max * draw_info.n))
+        color = draw_info.GREYS[proportion]
 
         if i in color_positions:
             color = color_positions[i]
@@ -98,9 +99,27 @@ def bubble_sort(draw_info):
             num2 = lst[j + 1]
             if (num1 > num2):
                 lst[j], lst[j + 1] = lst[j + 1], lst[j]
-                draw_list(draw_info, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
+                draw_list(draw_info, {j: draw_info.SWAP1, j + 1: draw_info.SWAP2}, True)
                 yield True
     return lst
+
+def insertion_sort(draw_info):
+    lst = draw_info.lst
+
+    for i in range(1, len(lst)):
+        current = lst[i]
+        while i > 0 and lst[i - 1] > current:
+            lst[i] = lst[i - 1]
+            i -= 1
+            lst[i] = current
+            draw_list(draw_info, {i - 1: draw_info.SWAP1, i: draw_info.SWAP2}, True)
+            yield True
+
+             
+
+
+
+
 
 # render the screen
 # define the main event loop
@@ -115,14 +134,12 @@ def main():
 
     clock = pygame.time.Clock()
 
-    n = 100
-    max_val = 100
+    n = 150
+    lst_max = 100
 
-
-    draw_info = Draw_info(1000, 600, n, max_val)
+    draw_info = Draw_info(1000, 600, n, lst_max)
 
     while run:
-        #sleep(.1)
         clock.tick(60) #tps
         if sorting:
             try:
@@ -130,7 +147,7 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(draw_info, n)
+            draw(draw_info, sorting_algo_name)
         pygame.display.update()
         for event in pygame.event.get(): 
         # Returns a list of all the events that have occured since the last loop
@@ -146,6 +163,13 @@ def main():
             elif event.key == pygame.K_SPACE and not sorting:
                 sorting = True
                 sorting_algorithm_generator = sorting_algorithm(draw_info)
+            elif event.key == pygame.K_i and not sorting:
+                sorting_algorithm  = insertion_sort
+                sorting_algo_name  = "Insertion Sort"
+            elif event.key == pygame.K_b and not sorting:
+                sorting_algorithm  = bubble_sort
+                sorting_algo_name  = "Bubble Sort"
+            
     pygame.quit()
 
 if __name__ == "__main__":
