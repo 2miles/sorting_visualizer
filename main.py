@@ -68,7 +68,13 @@ def draw(draw_info, algo_name):
     controls = draw_info.FONT.render("R: Reset     SPACE: Start Sort", 1, draw_info.BLACK)
     draw_info.window.blit(controls, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - controls.get_width() / 2, 45))
 
-    sorting_str = ["I - Insertion Sort", "B - Bubble Sort", "Q - Quick Sort", "M - Merge Sort"]
+    sorting_str = [
+        "I - Insertion Sort", 
+        "B - Bubble Sort", 
+        "Q - Quick Sort", 
+        "M - Merge Sort",
+        "S - Selection Sort",
+        ]
     sorting = draw_info.FONT.render(sorting_str[0], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 30))
     sorting = draw_info.FONT.render(sorting_str[1], 1, draw_info.BLACK)
@@ -77,6 +83,8 @@ def draw(draw_info, algo_name):
     draw_info.window.blit(sorting, (30, 80))
     sorting = draw_info.FONT.render(sorting_str[3], 1, draw_info.BLACK)
     draw_info.window.blit(sorting, (30, 105))
+    sorting = draw_info.FONT.render(sorting_str[4], 1, draw_info.BLACK)
+    draw_info.window.blit(sorting, (30, 130))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -160,9 +168,9 @@ def merge_sort(arr, draw_info):
         mid = len(arr)//2
         L = arr[:mid]
         R = arr[mid:]
-        sleep(.1)
         merge_sort(L, draw_info)
         merge_sort(R, draw_info)
+        sleep(.1)
         i = j = k = 0
         while i < len(L) and j < len(R):
             if L[i] < R[j]:
@@ -185,6 +193,22 @@ def merge_sort(arr, draw_info):
             j += 1
             k += 1
     
+def selection_sort(draw_info):
+    lst = draw_info.lst
+    for i in range(len(lst)):
+        # Find the minimum element in remaining 
+        # unsorted array
+        min_idx = i
+        for j in range(i+1, len(lst)):
+            if lst[min_idx] > lst[j]:
+                min_idx = j
+                
+        # Swap the found minimum element with 
+        # the first element        
+        sleep(.1)
+        lst[i], lst[min_idx] = lst[min_idx], lst[i]
+        draw_list(draw_info, {i: draw_info.SWAP1, min_idx: draw_info.SWAP2}, True)
+    yield True
 
 # render the screen
 # define the main event loop
@@ -240,6 +264,9 @@ def main():
             elif event.key == pygame.K_m and not sorting:
                 sorting_algorithm  = merge_sort_wrapper
                 sorting_algo_name  = "Merge sort"
+            elif event.key == pygame.K_s and not sorting:
+                sorting_algorithm  = selection_sort
+                sorting_algo_name  = "Selection sort"
   
   
             
