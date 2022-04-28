@@ -5,38 +5,38 @@ from time import sleep
 pygame.init()
 
 class Draw_info:
-    #class attributes
-    BLACK = 0, 0, 0
+    # colors
+    TEXT_COLOR= 0, 0, 0
+    TITLE_COLOR = 100, 0, 100
     BACKGROUND_COLOR = 100, 140, 150
     MENU_BG_COLOR = 80, 120, 120
-    SWAP1 = 180, 250, 0
-    SWAP2 = 250, 80, 0
-    TITLE =100, 0, 100
-    GREYS = []
+    SWAP1_COLOR = 180, 250, 0
+    SWAP2_COLOR = 250, 80, 0
+    GREYS_COLOR_LIST = []
 
     FONT = pygame.font.SysFont('calibri', 20)
     LARGE_FONT = pygame.font.SysFont('cansolas', 50)
 
     SIDE_PAD = 100
-    LEFT_MENU = 200
-    TOP_PAD = 150
+    MENU_WIDTH = 200
+    TOP_PAD = 100
     BOTTOM_PAD = 50
 
     def __init__(self, width, height, n, lst_max):
         self.width = width
         self.height = height
         self.n = n
-        self. lst_max= lst_max
+        self.lst_max= lst_max
         self.lst = self.build_list()
-        self.bar_width = round((self.width - self.SIDE_PAD - self.LEFT_MENU) / self.n)
+        self.GREYS_COLOR_LIST = self.build_greys()
+        self.bar_width = round((self.width - self.SIDE_PAD - self.MENU_WIDTH) / self.n)
         self.graph_height = self.height - self.TOP_PAD
         self.scale = self.graph_height / self.lst_max
-        self.start_x = self.SIDE_PAD // 2 + self.LEFT_MENU
+        self.start_x = self.SIDE_PAD // 2 + self.MENU_WIDTH
 
         # create the pygame window
         self.window = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Sorting Visualizer")
-        self.build_greys()
 
     def build_greys(self):
         # returns list of tuples representing n shades (r,g,b) from darkest to lightest
@@ -47,7 +47,7 @@ class Draw_info:
         for i in range(self.n + 1):
             rgb_val = darkest + ( color_range / self.n) * i
             greys.append((rgb_val, rgb_val, rgb_val))
-        self.GREYS = greys
+        return greys
 
     def build_list(self):
         lst = []
@@ -57,18 +57,16 @@ class Draw_info:
         return lst
 
 
+
 def draw(draw_info, algo_name):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
-    menu_rect = (0,0,draw_info.LEFT_MENU, draw_info.height)
+    menu_rect = (0,0,draw_info.MENU_WIDTH, draw_info.height)
     pygame.draw.rect(draw_info.window, draw_info.MENU_BG_COLOR, menu_rect)
 
-    title = draw_info.LARGE_FONT.render(f"{algo_name}", 1, draw_info.TITLE)
-    draw_info.window.blit(title, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - title.get_width() / 2, 10))
+    title = draw_info.LARGE_FONT.render(f"{algo_name}", 1, draw_info.TITLE_COLOR)
+    draw_info.window.blit(title, (draw_info.width / 2 + draw_info.MENU_WIDTH / 2 - title.get_width() / 2, 10))
 
-    controls = draw_info.FONT.render("R: Reset     SPACE: Start Sort", 1, draw_info.BLACK)
-    draw_info.window.blit(controls, (draw_info.width / 2 + draw_info.LEFT_MENU / 2 - controls.get_width() / 2, 45))
-
-    sorting_str = [
+    menu_text = [
         "I - Insertion Sort", 
         "B - Bubble Sort", 
         "Q - Quick Sort", 
@@ -76,38 +74,43 @@ def draw(draw_info, algo_name):
         "S - Selection Sort",
         "H - Heap Sort",
         ]
-    sorting = draw_info.FONT.render(sorting_str[0], 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (30, 30))
-    sorting = draw_info.FONT.render(sorting_str[1], 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (30, 55))
-    sorting = draw_info.FONT.render(sorting_str[2], 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (30, 80))
-    sorting = draw_info.FONT.render(sorting_str[3], 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (30, 105))
-    sorting = draw_info.FONT.render(sorting_str[4], 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (30, 130))
-    sorting = draw_info.FONT.render(sorting_str[5], 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (30, 155))
+    controls_text = [
+        "R - Reset",
+        "SPACE - Start",
+    ]
+
+    def render_menu_option(option_str, x, y):
+        if(option_str[4:] == algo_name):
+            option = draw_info.FONT.render(option_str, 1, draw_info.TITLE_COLOR)
+        else:
+            option = draw_info.FONT.render(option_str, 1, draw_info.TEXT_COLOR)
+        draw_info.window.blit(option, (x, y))
+
+    for i in range(len(menu_text)):
+        render_menu_option(menu_text[i], 20, 20 + i * 30)
+
+    for i in range(len(controls_text)):
+        render_menu_option(controls_text[i], 20, 20 + len(menu_text * 30) + 30 + i * 30)
 
     draw_list(draw_info)
     pygame.display.update()
 
-def draw_list(draw_info, color_positions={}, clear_bg=False):
+def draw_list(draw_info, swap_positions={}, clear_bg=False):
     lst = draw_info.lst
     if clear_bg:
-        clear_rect = (draw_info.SIDE_PAD // 2 + draw_info.LEFT_MENU, draw_info.TOP_PAD, 
+        clear_rect = (draw_info.SIDE_PAD // 2 + draw_info.MENU_WIDTH, draw_info.TOP_PAD, 
                         draw_info.width - draw_info.SIDE_PAD, draw_info.height - draw_info.TOP_PAD)
         pygame.draw.rect(draw_info.window, draw_info.BACKGROUND_COLOR, clear_rect)
+
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.bar_width
         y = draw_info.TOP_PAD + (draw_info.graph_height - (draw_info.scale * val))
 
-
         proportion = int((val / draw_info.lst_max * draw_info.n))
-        color = draw_info.GREYS[proportion]
+        color = draw_info.GREYS_COLOR_LIST[proportion]
 
-        if i in color_positions:
-            color = color_positions[i]
+        if i in swap_positions:
+            color = swap_positions[i]
         
         pygame.draw.rect(draw_info.window, color, (x, y, draw_info.bar_width, draw_info.height))
 
@@ -115,7 +118,9 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
         pygame.display.update()
 
 
-
+##############################################################################
+# Sorting algorithm definitions
+##############################################################################
 def bubble_sort(draw_info):
     lst = draw_info.lst
     for i in range(len(lst) - 1):
@@ -124,7 +129,7 @@ def bubble_sort(draw_info):
             num2 = lst[j + 1]
             if (num1 > num2):
                 lst[j], lst[j + 1] = lst[j + 1], lst[j]
-                draw_list(draw_info, {j: draw_info.SWAP1, j + 1: draw_info.SWAP2}, True)
+                draw_list(draw_info, {j: draw_info.SWAP1_COLOR, j + 1: draw_info.SWAP2_COLOR}, True)
                 yield True
     return lst
 
@@ -137,7 +142,7 @@ def insertion_sort(draw_info):
             lst[i] = lst[i - 1]
             i -= 1
             lst[i] = current
-            draw_list(draw_info, {i - 1: draw_info.SWAP1, i: draw_info.SWAP2}, True)
+            draw_list(draw_info, {i - 1: draw_info.SWAP1_COLOR, i: draw_info.SWAP2_COLOR}, True)
             yield True
 
 
@@ -147,40 +152,25 @@ def quick_sort_wrapper(draw_info):
     yield True
 
 def partition(arr, low, high, draw_info):
+
+    sleep(.2)
     i = (low - 1)         # index of smaller element
     pivot = arr[high]     # pivot
  
     for j in range(low, high):
- 
-        # If current element is smaller
-        # than or equal to pivot
         if arr[j] <= pivot:
-         
-            # increment index of
-            # smaller element
             i += 1
             arr[i], arr[j] = arr[j], arr[i]
-            draw_list(draw_info, {i: draw_info.SWAP1, j: draw_info.SWAP2}, True)
+            draw_list(draw_info, {i: draw_info.SWAP1_COLOR, j: draw_info.SWAP2_COLOR}, True)
  
     arr[i + 1], arr[high] = arr[high], arr[i + 1]
-    draw_list(draw_info, {i + 1: draw_info.SWAP1, high: draw_info.SWAP2}, True)
+    draw_list(draw_info, {i + 1: draw_info.SWAP1_COLOR, high: draw_info.SWAP2_COLOR}, True)
     return (i + 1)
  
-# The main function that implements QuickSort
-# arr[] --> Array to be sorted,
-# low --> Starting index,
-# high --> Ending index
- 
-# Function to do Quick sort
+
 def quickSort(arr, low, high, draw_info):
     if low < high:
- 
-        # pi is partitioning index, arr[p] is now
-        # at right place
         pi = partition(arr, low, high, draw_info)
- 
-        # Separately sort elements before
-        # partition and after partition
         quickSort(arr, low, pi-1, draw_info)
         quickSort(arr, pi + 1, high, draw_info)
 
@@ -188,46 +178,33 @@ def quickSort(arr, low, high, draw_info):
 def selection_sort(draw_info):
     lst = draw_info.lst
     for i in range(len(lst)):
-        # Find the minimum element in remaining 
-        # unsorted array
         min_idx = i
         for j in range(i+1, len(lst)):
             if lst[min_idx] > lst[j]:
                 min_idx = j
-                
-        # Swap the found minimum element with 
-        # the first element        
         sleep(.1)
         lst[i], lst[min_idx] = lst[min_idx], lst[i]
-        draw_list(draw_info, {i: draw_info.SWAP1, min_idx: draw_info.SWAP2}, True)
+        draw_list(draw_info, {i: draw_info.SWAP1_COLOR, min_idx: draw_info.SWAP2_COLOR}, True)
     yield True
 
 
 def merge_sort_wrapper(draw_info):
     mergeSort(draw_info.lst, draw_info)
     yield True
+
 def mergeSort(a, draw_info):
-    # start with least partition size of 2^0 = 1
     width = 1   
     n = len(a)                                         
-    # subarray size grows by powers of 2
-    # since growth of loop condition is exponential,
-    # time consumed is logarithmic (log2n)
     while (width < n):
-        # always start from leftmost
         l=0;
         while (l < n):
             r = min(l+(width*2-1), n-1)        
             m = min(l+width-1,n-1)
-            # final merge should consider
-            # unmerged sublist if input arr
-            # size is not power of 2             
             merge(a, l, m, r, draw_info)
             l += width*2
-        # Increasing sub array size by powers of 2
         width *= 2
     return a
-# Merge Function
+
 def merge(a, l, m, r, draw_info):
     n1 = m - l + 1
     n2 = r - m
@@ -235,32 +212,32 @@ def merge(a, l, m, r, draw_info):
     R = [0] * n2
     for i in range(0, n1):
         L[i] = a[l + i]
-        draw_list(draw_info, {n1 * i: draw_info.SWAP1, l + i: draw_info.SWAP2}, True)
+        draw_list(draw_info, {n1 * i: draw_info.SWAP1_COLOR, l + i: draw_info.SWAP2_COLOR}, True)
     for i in range(0, n2):
-        draw_list(draw_info, {n2 * i: draw_info.SWAP1, l + i: draw_info.SWAP2}, True)
+        draw_list(draw_info, {n2 * i: draw_info.SWAP1_COLOR, l + i: draw_info.SWAP2_COLOR}, True)
         R[i] = a[m + i + 1]
 
     i, j, k = 0, 0, l
     while i < n1 and j < n2:
         if L[i] <= R[j]:
             a[k] = L[i]
-            draw_list(draw_info, {k: draw_info.SWAP1, n1 * i: draw_info.SWAP2}, True)
+            draw_list(draw_info, {k: draw_info.SWAP1_COLOR, n1 * i: draw_info.SWAP2_COLOR}, True)
             i += 1
         else:
             a[k] = R[j]
-            draw_list(draw_info, {k: draw_info.SWAP1, n2 * j: draw_info.SWAP2}, True)
+            draw_list(draw_info, {k: draw_info.SWAP1_COLOR, n2 * j: draw_info.SWAP2_COLOR}, True)
             j += 1
         k += 1
 
     while i < n1:
         a[k] = L[i]
-        draw_list(draw_info, {k: draw_info.SWAP1, n1 * i: draw_info.SWAP2}, True)
+        draw_list(draw_info, {k: draw_info.SWAP1_COLOR, n1 * i: draw_info.SWAP2_COLOR}, True)
         i += 1
         k += 1
 
     while j < n2:
         a[k] = R[j]
-        draw_list(draw_info, {k: draw_info.SWAP1, n2 * j: draw_info.SWAP2}, True)
+        draw_list(draw_info, {k: draw_info.SWAP1_COLOR, n2 * j: draw_info.SWAP2_COLOR}, True)
         j += 1
         k += 1
 
@@ -271,6 +248,7 @@ def heap_sort_wrapper(draw_info):
     yield True
 
 def heapify(arr, n, i, draw_info):
+    sleep(.025)
     largest = i  # Initialize largest as root
     l = 2 * i + 1     # left = 2*i + 1
     r = 2 * i + 2     # right = 2*i + 2
@@ -280,22 +258,28 @@ def heapify(arr, n, i, draw_info):
         largest = r
     if largest != i:
         arr[i], arr[largest] = arr[largest], arr[i]  # swap
-        draw_list(draw_info, {i: draw_info.SWAP1, largest: draw_info.SWAP2}, True)
+        draw_list(draw_info, {i: draw_info.SWAP1_COLOR, largest: draw_info.SWAP2_COLOR}, True)
         heapify(arr, n, largest, draw_info)
  
 def heapSort(arr, draw_info):
+    sleep(.025)
     n = len(arr)
     for i in range(n//2 - 1, -1, -1):
         heapify(arr, n, i, draw_info)
     for i in range(n-1, 0, -1):
         arr[i], arr[0] = arr[0], arr[i]  # swap
-        draw_list(draw_info, {i: draw_info.SWAP1, 0: draw_info.SWAP2}, True)
+        draw_list(draw_info, {i: draw_info.SWAP1_COLOR, 0: draw_info.SWAP2_COLOR}, True)
         heapify(arr, i, 0, draw_info)
 
+
+##############################################################################
+# main
+##############################################################################
+def main():
 # render the screen
 # define the main event loop
-def main():
-
+    n = 100
+    lst_max = 100
     run = True
     sorting = False
 
@@ -304,9 +288,6 @@ def main():
     sorting_algorithm_generator = None
 
     clock = pygame.time.Clock()
-
-    n = 100
-    lst_max = 100
 
     draw_info = Draw_info(1000, 500, n, lst_max)
 
@@ -342,20 +323,18 @@ def main():
                 sorting_algo_name  = "Bubble Sort"
             elif event.key == pygame.K_q and not sorting:
                 sorting_algorithm  = quick_sort_wrapper
-                sorting_algo_name  = "Quick sort"
+                sorting_algo_name  = "Quick Sort"
             elif event.key == pygame.K_m and not sorting:
                 sorting_algorithm  = merge_sort_wrapper
-                sorting_algo_name  = "Merge sort"
+                sorting_algo_name  = "Merge Sort"
             elif event.key == pygame.K_s and not sorting:
                 sorting_algorithm  = selection_sort
-                sorting_algo_name  = "Selection sort"
+                sorting_algo_name  = "Selection Sort"
             elif event.key == pygame.K_h and not sorting:
                 sorting_algorithm  = heap_sort_wrapper
-                sorting_algo_name  = "Heap sort"
-  
-  
-            
+                sorting_algo_name  = "Heap Sort"
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
